@@ -14,6 +14,8 @@
 // limitations under the License.
 
 import 'dart:ui' show TextDirection;
+
+import 'package:charts_common/common.dart' as common;
 import 'package:flutter/material.dart'
     show
         AnimationController,
@@ -21,20 +23,21 @@ import 'package:flutter/material.dart'
         State,
         TickerProviderStateMixin,
         Widget;
-import 'package:charts_common/common.dart' as common;
 import 'package:flutter/widgets.dart'
     show Directionality, LayoutId, CustomMultiChildLayout;
+
+import 'base_chart.dart' show BaseChart;
 import 'behaviors/chart_behavior.dart'
     show BuildableBehavior, ChartBehavior, ChartStateBehavior;
-import 'base_chart.dart' show BaseChart;
 import 'chart_container.dart' show ChartContainer;
-import 'chart_state.dart' show ChartState;
 import 'chart_gesture_detector.dart' show ChartGestureDetector;
+import 'chart_state.dart' show ChartState;
 import 'widget_layout_delegate.dart';
 
 class BaseChartState<D> extends State<BaseChart<D>>
     with TickerProviderStateMixin
     implements ChartState {
+  bool _isControllerDisposed = false;
   // Animation
   AnimationController _animationController;
   double _animationValue = 0.0;
@@ -139,6 +142,7 @@ class BaseChartState<D> extends State<BaseChart<D>>
 
   @override
   void dispose() {
+    _isControllerDisposed = true;
     _animationController.dispose();
     _behaviorAnimationControllers
         .forEach((_, controller) => controller?.dispose());
@@ -152,6 +156,7 @@ class BaseChartState<D> extends State<BaseChart<D>>
   }
 
   void _playAnimation(Duration duration) {
+    if (_isControllerDisposed) return;
     _animationController.duration = duration;
     _animationController.forward(from: (duration == Duration.zero) ? 1.0 : 0.0);
     _animationValue = _animationController.value;
